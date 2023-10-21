@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "circleci2"
+version = "0.1.0"
+description = "CircleCI v2 API wrapper with type annotations"
+authors = ["Roey Darwish Dror <roey.ghost@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+requests = "^2.31.0"
+pydantic = "^2.4.2"
+
+
+[tool.poetry.group.dev.dependencies]
+pyright = "^1.1.332"
+black = "^23.10.0"
+flake8 = "^6.1.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
