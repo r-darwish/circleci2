@@ -1,6 +1,5 @@
 from datetime import datetime
-from tracemalloc import stop
-from typing import TYPE_CHECKING, Any, Literal, NewType, Optional
+from typing import TYPE_CHECKING, Any, Generic, Literal, NewType, Optional, Protocol, TypeVar
 from uuid import UUID
 from pydantic import BaseModel, Field, model_serializer, model_validator
 
@@ -59,13 +58,16 @@ class ProjectSlug(BaseModel):
             ...
 
 
-class ProjectPipelinesQueryParams(BaseModel):
+class MultiPageQueryParams(BaseModel):
+    page_token: Optional[PageToken]
+
+
+class ProjectPipelinesQueryParams(MultiPageQueryParams):
     branch: Optional[Branch]
-    page_token: Optional[PageToken]
 
 
-class PipelineWorkflowQueryParams(BaseModel):
-    page_token: Optional[PageToken]
+class PipelineWorkflowQueryParams(MultiPageQueryParams):
+    pass
 
 
 class PipelineError(BaseModel):
@@ -118,11 +120,6 @@ class Pipeline(BaseModel):
     vcs: PipelineVCS
 
 
-class ProjectPipelineResponse(BaseModel):
-    next_page_token: Optional[PageToken] = Field(default=None)
-    items: list[Pipeline]
-
-
 class Workflow(BaseModel):
     id: WorkflowId
     pipeline_id: PipelineId
@@ -142,6 +139,14 @@ class Workflow(BaseModel):
         return self.status in {"success", "failed", "error", "canceled", "unauthorized"}
 
 
-class PipelineWorkflowResponse(BaseModel):
+CircleResponse = TypeVar("CircleResponse", bound=BaseModel)
+ResponseItem = TypeVar("ResponseItem", bound=BaseModel)
+
+
+class MultipageResponse(BaseModel, Generic[ResponseItem]):
     next_page_token: Optional[PageToken] = Field(default=None)
-    items: list[Workflow]
+    items: list[ResponseItem]
+
+
+PipelineWorkflowResponse = MultipageResponse[Workflow]
+ProjectPipelineResponse = MultipageResponse[Pipeline]
