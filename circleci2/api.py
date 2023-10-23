@@ -6,7 +6,9 @@ from typing import Generator, Optional, Type
 from pydantic import BaseModel
 from circleci2.types import (
     CircleResponse,
+    Job,
     Pipeline,
+    PipelineWorkflowResponse,
     ResponseItem,
     MultiPageQueryParams,
     MultipageResponse,
@@ -18,6 +20,9 @@ from circleci2.types import (
     PageToken,
     ProjectPipelineResponse,
     Workflow,
+    WorkflowId,
+    WorkflowJobsQueryParams,
+    WorkflowJobsResponse,
 )
 
 
@@ -60,17 +65,42 @@ class API:
         )
 
     def iter_project_pipelines(
-        self, project: ProjectSlug, *, branch: Optional[Branch] = None, page_token: Optional[PageToken] = None
+        self, project: ProjectSlug, *, branch: Optional[Branch] = None
     ) -> Generator[Pipeline, None, None]:
         return self._multipage_request(
             f"project/{project.serialize_slug()}/pipeline",
-            query_params=ProjectPipelinesQueryParams(branch=branch, page_token=page_token),
+            query_params=ProjectPipelinesQueryParams(branch=branch, page_token=None),
             response_type=Pipeline,
         )
 
-    def get_pipline_workflows(self, pipeline_id: PipelineId, *, page_token: Optional[PageToken] = None) -> Workflow:
+    def get_pipline_workflows(
+        self, pipeline_id: PipelineId, *, page_token: Optional[PageToken] = None
+    ) -> PipelineWorkflowResponse:
         return self._request(
             f"pipeline/{pipeline_id}/workflow",
             query_params=PipelineWorkflowQueryParams(page_token=page_token),
+            response_type=PipelineWorkflowResponse,
+        )
+
+    def iter_pipline_workflows(self, pipeline_id: PipelineId) -> Generator[Workflow, None, None]:
+        return self._multipage_request(
+            f"pipeline/{pipeline_id}/workflow",
+            query_params=PipelineWorkflowQueryParams(page_token=None),
             response_type=Workflow,
+        )
+
+    def get_workflow_jobs(
+        self, workflow_id: WorkflowId, *, page_token: Optional[PageToken] = None
+    ) -> WorkflowJobsResponse:
+        return self._request(
+            f"workflow/{workflow_id}/job",
+            query_params=WorkflowJobsQueryParams(page_token=page_token),
+            response_type=WorkflowJobsResponse,
+        )
+
+    def iter_workflow_jobs(self, workflow_id: WorkflowId) -> Generator[Job, None, None]:
+        return self._multipage_request(
+            f"workflow/{workflow_id}/job",
+            query_params=WorkflowJobsQueryParams(page_token=None),
+            response_type=Job,
         )

@@ -8,9 +8,27 @@ Branch = NewType("Branch", str)
 PageToken = NewType("PageToken", str)
 PipelineId = NewType("PipelineId", UUID)
 WorkflowId = NewType("WorkflowId", UUID)
+JobId = NewType("JobId", UUID)
 UserId = NewType("UserId", UUID)
+ApprovalRequestId = NewType("ApprovalRequestId", UUID)
 WorkflowStatus = Literal[
     "success", "running", "not_run", "failed", "error", "failing", "on_hold", "canceled", "unauthorized"
+]
+JobStatus = Literal[
+    "success",
+    "running",
+    "not_run",
+    "failed",
+    "retried",
+    "queued",
+    "not_running",
+    "infrastructure_fail",
+    "timedout",
+    "on_hold",
+    "terminated-unknown",
+    "blocked",
+    "canceled",
+    "unauthorized",
 ]
 
 
@@ -67,6 +85,10 @@ class ProjectPipelinesQueryParams(MultiPageQueryParams):
 
 
 class PipelineWorkflowQueryParams(MultiPageQueryParams):
+    pass
+
+
+class WorkflowJobsQueryParams(MultiPageQueryParams):
     pass
 
 
@@ -132,11 +154,39 @@ class Workflow(BaseModel):
     started_by: UserId
     pipeline_number: int
     created_at: datetime
-    stopped_at: datetime
+    stopped_at: Optional[datetime]
 
     @property
     def ended(self) -> bool:
         return self.status in {"success", "failed", "error", "canceled", "unauthorized"}
+
+
+class Job(BaseModel):
+    id: JobId
+    job_number: Optional[int] = Field(default=None)
+    canceled_by: Optional[UserId] = Field(default=None)
+    dependencies: list[JobId]
+    name: str
+    started_at: Optional[datetime] = Field(default=None)
+    approved_by: Optional[UserId] = Field(default=None)
+    project_slug: ProjectSlug
+    status: JobStatus
+    type: Literal["build", "approval"]
+    stopped_at: Optional[datetime] = Field(default=None)
+    approval_request_id: Optional[ApprovalRequestId] = Field(default=None)
+
+    @property
+    def ended(self) -> bool:
+        return self.status in {
+            "success",
+            "failed",
+            "error",
+            "canceled",
+            "unauthorized",
+            "timedout",
+            "infrastructure_fail",
+            "terminated",
+        }
 
 
 CircleResponse = TypeVar("CircleResponse", bound=BaseModel)
@@ -150,3 +200,4 @@ class MultipageResponse(BaseModel, Generic[ResponseItem]):
 
 PipelineWorkflowResponse = MultipageResponse[Workflow]
 ProjectPipelineResponse = MultipageResponse[Pipeline]
+WorkflowJobsResponse = MultipageResponse[Job]
