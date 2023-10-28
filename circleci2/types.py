@@ -1,5 +1,14 @@
 from datetime import datetime
-from typing import TYPE_CHECKING, Any, Generic, Literal, NewType, Optional, Protocol, TypeVar
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Generic,
+    Literal,
+    NewType,
+    Optional,
+    Protocol,
+    TypeVar,
+)
 from uuid import UUID
 from pydantic import BaseModel, Field, model_serializer, model_validator
 
@@ -12,7 +21,15 @@ JobId = NewType("JobId", UUID)
 UserId = NewType("UserId", UUID)
 ApprovalRequestId = NewType("ApprovalRequestId", UUID)
 WorkflowStatus = Literal[
-    "success", "running", "not_run", "failed", "error", "failing", "on_hold", "canceled", "unauthorized"
+    "success",
+    "running",
+    "not_run",
+    "failed",
+    "error",
+    "failing",
+    "on_hold",
+    "canceled",
+    "unauthorized",
 ]
 JobStatus = Literal[
     "success",
