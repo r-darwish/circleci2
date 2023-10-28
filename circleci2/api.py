@@ -36,7 +36,7 @@ class API:
     ) -> CircleResponse:
         response = self._client.get(
             "https://circleci.com/api/v2/" + endpoint,
-            params=query_params.model_dump(),
+            params=query_params.model_dump(by_alias=True),
             auth=HTTPBasicAuth(self._token, ""),
             headers={"content-type": "application/json"},
         )

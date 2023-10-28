@@ -77,7 +77,7 @@ class ProjectSlug(BaseModel):
 
 
 class MultiPageQueryParams(BaseModel):
-    page_token: Optional[PageToken]
+    page_token: Optional[PageToken] = Field(serialization_alias="page-token")
 
 
 class ProjectPipelinesQueryParams(MultiPageQueryParams):
@@ -128,6 +128,10 @@ class PipelineVCS(BaseModel):
     tag: Optional[str] = Field(default=None)
     commit: Optional[Commit] = Field(default=None)
 
+    @property
+    def link(self) -> str:
+        return f"{self.target_repository_url}/commit/{self.revision}"
+
 
 class Pipeline(BaseModel):
     id: PipelineId
@@ -159,6 +163,10 @@ class Workflow(BaseModel):
     @property
     def ended(self) -> bool:
         return self.status in {"success", "failed", "error", "canceled", "unauthorized"}
+
+    @property
+    def link(self) -> str:
+        return f"https://app.circleci.com/pipelines/github/wiz-sec/ops/{self.pipeline_number}/workflows/{self.id}"
 
 
 class Job(BaseModel):
